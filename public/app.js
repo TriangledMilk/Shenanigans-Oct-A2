@@ -37,7 +37,20 @@ async function loadItems() {
         `Ag: ${item.Ag} · ${item.weight_g} g · ${item.weight_toz} troy oz · ${item.ASW_toz} ASW troy oz · Number: ${item.number}`;
       node.querySelector('.coin-run').textContent = `Production run: ${item.production_run}`;
       node.querySelector('.coin-description').textContent = item.description;
-
+      const deleteButton = node.querySelector('.delete-button');
+      deleteButton.addEventListener('click', async () => {
+        if (!confirm(`Are you sure you want to delete "${item.name}"?`)) return;
+        deleteButton.disabled = true;
+        try {
+          const deleteResponse = await fetch(`/api/coin-items/${item._id}`, { method: 'DELETE' });
+          if (!deleteResponse.ok) throw new Error('Unable to delete the coin. Please try again later.');
+          if (!await loadItems()) formStatus.textContent = 'Coin deleted, but the collection could not be refreshed.';
+        } catch (error) {
+          formStatus.textContent = error.message || 'Unable to delete the coin. Please try again.';
+        } finally {
+          deleteButton.disabled = false;
+        }
+      });
       fragment.append(node);
     }
     coinItems.replaceChildren(fragment);
