@@ -1,10 +1,10 @@
-const form = document.querySelector('#resume-form');
+const form = document.querySelector('#coin-form');
 const formStatus = document.querySelector('#form-status');
-const resumeStatus = document.querySelector('#resume-status');
-const resumeItems = document.querySelector('#resume-items');
-const template = document.querySelector('#resume-item-template');
+const coinStatus = document.querySelector('#coin-status');
+const coinItems = document.querySelector('#coin-items');
+const template = document.querySelector('#coin-item-template');
 const submitButton = form.querySelector('button[type="submit"]');
-const fields = [...form.querySelectorAll('input, textarea')];
+const fields = [...form.querySelectorAll('input, textarea, select')];
 
 function validateField(field) {
   if (field.type === 'text' || field.tagName === 'TEXTAREA') {
@@ -23,25 +23,28 @@ for (const field of fields) {
 }
 
 async function loadItems() {
-  resumeStatus.textContent = 'Loading experiences…';
+  coinStatus.textContent = 'Loading coins…';
   try {
-    const response = await fetch('/api/resume-items');
-    if (!response.ok) throw new Error('Unable to load experiences. Please try again later.');
+    const response = await fetch('/api/coin-items');
+    if (!response.ok) throw new Error('Unable to load coins. Please try again later.');
     const items = await response.json();
     const fragment = document.createDocumentFragment();
     for (const item of items) {
       const node = template.content.cloneNode(true);
-      node.querySelector('.job-title').textContent = item.job_title;
-      node.querySelector('.employer').textContent = item.employer;
-      node.querySelector('.dates').textContent = `${item.start_year} – ${item.end_year ?? 'Present'}`;
-      node.querySelector('.accomplishment').textContent = item.accomplishment;
+      node.querySelector('.coin-name').textContent = item.name;
+      node.querySelector('.coin-type').textContent = item.circulation_or_bullion;
+      node.querySelector('.coin-specs').textContent =
+        `Ag: ${item.Ag} · ${item.weight_g} g · ${item.weight_toz} troy oz · ${item.ASW_toz} ASW troy oz · Number: ${item.number}`;
+      node.querySelector('.coin-run').textContent = `Production run: ${item.production_run}`;
+      node.querySelector('.coin-description').textContent = item.description;
+
       fragment.append(node);
     }
-    resumeItems.replaceChildren(fragment);
-    resumeStatus.textContent = items.length ? '' : 'No experiences yet. Add the first one above.';
+    coinItems.replaceChildren(fragment);
+    coinStatus.textContent = items.length ? '' : 'No coins yet. Add the first one above.';
     return true;
   } catch {
-    resumeStatus.textContent = 'Unable to load experiences. Please refresh the page to try again.';
+    coinStatus.textContent = 'Unable to load coins. Please refresh the page to try again.';
     return false;
   }
 }
@@ -56,27 +59,28 @@ form.addEventListener('submit', async (event) => {
   }
 
   const data = Object.fromEntries(new FormData(form));
-  if (!data.end_year) delete data.end_year;
+  for (const field of form.querySelectorAll('input[type="number"]')) {
+    data[field.name] = Number(data[field.name]);
+  }
   submitButton.disabled = true;
-  formStatus.textContent = 'Saving experience…';
+  formStatus.textContent = 'Saving coin…';
   try {
-    const response = await fetch('/api/resume-items', {
+    const response = await fetch('/api/coin-items', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
     });
     if (!response.ok) {
       const body = await response.json().catch(() => ({}));
-      throw new Error(body.error || 'Unable to save the experience. Please try again.');
+      throw new Error(body.error || 'Unable to save the coin. Please try again.');
     }
     form.reset();
-    formStatus.textContent = 'Experience saved.';
-    if (!await loadItems()) formStatus.textContent = 'Experience saved, but the resume could not be refreshed.';
+    formStatus.textContent = 'Coin saved.';
+    if (!await loadItems()) formStatus.textContent = 'Coin saved, but the collection could not be refreshed.';
   } catch (error) {
-    formStatus.textContent = error.message || 'Unable to save the experience. Please try again.';
+    formStatus.textContent = error.message || 'Unable to save the coin. Please try again.';
   } finally {
     submitButton.disabled = false;
   }
 });
-
 loadItems();
