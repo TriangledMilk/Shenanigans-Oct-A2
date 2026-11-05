@@ -16,7 +16,7 @@ A public, shared coin collection that demonstrates creating and reading coin rec
 
 ## API
 
-Both endpoints use JSON. The `coin_items` collection is chosen explicitly; no additional index is created.
+Both endpoints use JSON. The `silver_coins` collection is chosen explicitly; no additional index is created.
 
 - `GET /api/coin-items` returns the retrieved MongoDB documents as an array, including MongoDB-generated fields.
 - `POST /api/coin-items` accepts `name`, `circulation_or_bullion`, `Ag`, `weight_g`, `weight_toz`, `ASW_toz`, `number`, `production_run`, and `description`. `circulation_or_bullion` must be `circulation` or `bullion`; `Ag` must be between 0 and 1; `number` must be a non-negative integer. Required text fields are trimmed and limited to 120 characters for `name` and `production_run`, and 2,000 for `description`. A valid item returns HTTP 201; invalid input returns HTTP 400.

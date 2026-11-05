@@ -10,6 +10,6 @@ const coinItemSchema = new mongoose.Schema({
   number: { type: Number, required: true, min: 0, validate: Number.isInteger },
   production_run: { type: String, required: true, trim: true, maxlength: 120 },
   description: { type: String, required: true, trim: true, maxlength: 2000 }
-}, { collection: 'coin_items', autoIndex: false });
+}, { collection: 'silver_coins', autoIndex: false });
 
 export const CoinItem = mongoose.models.CoinItem || mongoose.model('CoinItem', coinItemSchema);
